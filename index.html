@@ -135,8 +135,44 @@
 
     <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.0/dist/JsBarcode.all.min.js"></script>
     <script>
+        // LocalStorage functions
+        function saveCardData(name, points, cardNum) {
+            localStorage.setItem('cardName', name);
+            localStorage.setItem('cardPoints', points);
+            localStorage.setItem('cardNumber', cardNum);
+        }
+
+        function loadCardData() {
+            return {
+                name: localStorage.getItem('cardName'),
+                points: localStorage.getItem('cardPoints'),
+                cardNum: localStorage.getItem('cardNumber')
+            };
+        }
+
+        function updateCardDisplay(name, points, cardNum) {
+            document.querySelector('.thi-badge').innerText = name;
+            document.querySelector('.points-value').innerText = points;
+            document.querySelector('.barcode-number').innerText = cardNum;
+            generateBarcode(cardNum);
+        }
+
         // Init logic
         let currentCardNum = "608559 36404 1034 4930";
+        let currentName = "THI";
+        let currentPoints = "444,248";
+
+        // Load saved data if available
+        const savedData = loadCardData();
+        if (savedData.cardNum) {
+            currentCardNum = savedData.cardNum;
+        }
+        if (savedData.name) {
+            currentName = savedData.name;
+        }
+        if (savedData.points) {
+            currentPoints = savedData.points;
+        }
 
         function generateBarcode(num) {
             // strip spaces for generation
@@ -151,8 +187,8 @@
             });
         }
 
-        // Initial generation
-        generateBarcode(currentCardNum);
+        // Initial display with saved or default values
+        updateCardDisplay(currentName, currentPoints, currentCardNum);
 
         // Interaction Logic
         let clickCount = 0;
@@ -183,6 +219,32 @@
             modal.style.display = 'flex';
         }
 
+        // Format numbers with commas as user types
+        function formatNumberWithCommas(value) {
+            // Remove all non-digit characters
+            const numbers = value.replace(/\D/g, '');
+            // Add commas every 3 digits
+            return numbers.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+        }
+
+        // Set up real-time formatting for Points Balance input
+        const pointsInput = document.getElementById('editPoints-input');
+        pointsInput.addEventListener('input', function(e) {
+            const cursorPosition = e.target.selectionStart;
+            const originalLength = e.target.value.length;
+            
+            // Format the value
+            e.target.value = formatNumberWithCommas(e.target.value);
+            
+            // Adjust cursor position to account for added commas
+            const newLength = e.target.value.length;
+            const lengthDifference = newLength - originalLength;
+            const newCursorPosition = cursorPosition + lengthDifference;
+            
+            // Set cursor position after formatting
+            e.target.setSelectionRange(newCursorPosition, newCursorPosition);
+        });
+
         function closeModal() {
             modal.style.display = 'none';
         }
@@ -198,13 +260,11 @@
             // Add commas back
             newPoints = newPoints.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
 
-            // Update DOM
-            document.querySelector('.thi-badge').innerText = newName;
-            document.querySelector('.points-value').innerText = newPoints;
-            document.querySelector('.barcode-number').innerText = newCardNum;
+            // Save to localStorage
+            saveCardData(newName, newPoints, newCardNum);
 
-            // Regenerate Barcode
-            generateBarcode(newCardNum);
+            // Update DOM
+            updateCardDisplay(newName, newPoints, newCardNum);
 
             closeModal();
         }
