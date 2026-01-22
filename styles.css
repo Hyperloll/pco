@@ -17,14 +17,23 @@
 body {
     background: var(--bg-pink-top);
     min-height: 100vh;
+    max-height: 100vh;
+    height: 100vh;
     display: flex;
     flex-direction: column;
     padding-bottom: max(70px, calc(70px + env(safe-area-inset-bottom)));
     /* Space for bottom nav */
+    overflow: hidden;
+    position: fixed;
+    width: 100%;
 }
 
 html {
     background: var(--bg-pink-top);
+    overflow: hidden;
+    height: 100%;
+    position: fixed;
+    width: 100%;
 }
 
 /* Page Header */
